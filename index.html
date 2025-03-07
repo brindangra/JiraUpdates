@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jira Sprint Tasks</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        input, button, textarea { margin: 5px; padding: 8px; width: 100%; }
+        .task { border: 1px solid #ddd; padding: 10px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+
+    <h2>Jira Sprint Task Fetcher</h2>
+
+    <label>Jira Server URL:</label>
+    <input type="text" id="jiraUrl" placeholder="https://your-domain.atlassian.net" required>
+
+    <label>Email:</label>
+    <input type="email" id="jiraEmail" placeholder="Your Jira email" required>
+
+    <label>API Token:</label>
+    <input type="password" id="jiraToken" placeholder="Your Jira API token" required>
+
+    <label>Sprint ID:</label>
+    <input type="text" id="sprintId" placeholder="Enter Sprint ID" required>
+
+    <button onclick="fetchJiraTasks()">Fetch Tasks</button>
+
+    <h3>Tasks:</h3>
+    <div id="tasksContainer"></div>
+
+    <script>
+        async function fetchJiraTasks() {
+            const jiraUrl = document.getElementById("jiraUrl").value;
+            const email = document.getElementById("jiraEmail").value;
+            const apiToken = document.getElementById("jiraToken").value;
+            const sprintId = document.getElementById("sprintId").value;
+
+            if (!jiraUrl || !email || !apiToken || !sprintId) {
+                alert("Please fill all fields.");
+                return;
+            }
+
+            const response = await fetch("http://localhost:3000/fetch-tasks", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ jiraUrl, email, apiToken, sprintId })
+            });
+
+            if (!response.ok) {
+                alert("Error fetching tasks.");
+                return;
+            }
+
+            const data = await response.json();
+            displayTasks(data.issues);
+        }
+
+        function displayTasks(tasks) {
+            const container = document.getElementById("tasksContainer");
+            container.innerHTML = "";
+
+            tasks.forEach(task => {
+                const taskDiv = document.createElement("div");
+                taskDiv.classList.add("task");
+                taskDiv.innerHTML = `
+                    <p><strong>${task.key}:</strong> ${task.fields.summary}</p>
+                    <textarea id="comment-${task.key}" placeholder="Enter comment"></textarea>
+                    <button onclick="addComment('${task.key}')">Add Comment</button>
+                `;
+                container.appendChild(taskDiv);
+            });
+        }
+
+        async function addComment(taskKey) {
+    const jiraUrl = document.getElementById("jiraUrl").value;
+    const email = document.getElementById("jiraEmail").value;
+    const apiToken = document.getElementById("jiraToken").value;
+    const commentText = document.getElementById(`comment-${taskKey}`).value;
+
+    if (!commentText) {
+        alert("Comment cannot be empty.");
+        return;
+    }
+
+    const response = await fetch("http://localhost:3000/add-comment", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ jiraUrl, email, apiToken, issueKey: taskKey, comment: commentText })
+    });
+
+    const result = await response.json();
+    if (response.ok) {
+        alert(`Comment added to ${taskKey}`);
+    } else {
+        console.error("Error adding comment:", result);
+        alert(`Failed to add comment: ${result.error}`);
+    }
+}
+
+
+    </script>
+
+</body>
+</html>
