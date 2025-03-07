@@ -43,7 +43,7 @@
                 return;
             }
 
-            const response = await fetch("http://localhost:3000/fetch-tasks", {
+            const response = await fetch("https://jiraupdate-763825085159.us-central1.run.app/fetch-tasks", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ jiraUrl, email, apiToken, sprintId })
@@ -85,7 +85,7 @@
         return;
     }
 
-    const response = await fetch("http://localhost:3000/add-comment", {
+    const response = await fetch("https://jiraupdate-763825085159.us-central1.run.app/add-comment", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ jiraUrl, email, apiToken, issueKey: taskKey, comment: commentText })
